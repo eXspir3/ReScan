@@ -1,8 +1,3 @@
-import rawhttp.core.RawHttp;
-import rawhttp.core.RawHttpRequest;
-import rawhttp.core.RawHttpResponse;
-import rawhttp.core.client.TcpRawHttpClient;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -19,10 +14,9 @@ public class ReqReTest {
 
 
     public static void main(String[] args) throws IOException {
-        ReTestHandler handler = new ReTestHandler();
         File file = new File("Requests.txt");
-        handler.importRequests(file);
-        handler.sendRequests();
+        ReTestHandler handler = new ReTestHandler(file);
+        handler.sendAndTest();
     }
 
 }

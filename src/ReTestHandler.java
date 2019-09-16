@@ -14,10 +14,15 @@ import java.util.Scanner;
 
 class ReTestHandler {
     private Map<String, String> requestMap = new HashMap<>();
-    Table<String, String, String> loggedErrors = HashBasedTable.create();
+    private File file;
+    private Table<String, String, String> loggedErrors = HashBasedTable.create();
 
+    public ReTestHandler(File file) throws FileNotFoundException {
+    this.file = file;
+    this.importRequests();
+    }
 
-    void sendRequests() throws IOException {
+    void sendAndTest() throws IOException {
         TcpRawHttpClient client = new TcpRawHttpClient();
         RawHttp http = new RawHttp();
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
@@ -27,10 +32,10 @@ class ReTestHandler {
         }
     }
 
-    void importRequests(File file) throws FileNotFoundException {
+    private void importRequests() throws FileNotFoundException {
         String request;
         String options;
-        Scanner scanner = new Scanner(file);
+        Scanner scanner = new Scanner(this.file);
         scanner.useDelimiter("--options|--nextRequest");
         while(scanner.hasNext()) {
             request = scanner.next();
@@ -54,6 +59,10 @@ class ReTestHandler {
             } else if(option.equalsIgnoreCase("AssertStatusCode")){
                 String statusCode = scanner.next();
                 assertEquals(statusCode, Integer.valueOf(response.getStatusCode()).toString(), request, response, "Statuscode");
+            } else if(option.equalsIgnoreCase("ContainRegex")){
+                scanner.useDelimiter("\\^|\\$");
+                System.out.println("ContainsRegex Option set: " + scanner.next());
+                scanner.useDelimiter("\n|:|\r\n");
             }
         }
         System.out.println(loggedErrors.toString());

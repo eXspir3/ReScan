@@ -9,5 +9,5 @@ Host: consent.google.com
 AssertHeader:Pragma:no-caches
 AssertHeader:Content-Type:text/html; charset=utf-8
 AssertStatusCode:205
-
+ContainRegex:^google$
 
