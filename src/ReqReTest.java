@@ -22,7 +22,7 @@ public class ReqReTest {
         ReTestHandler handler = new ReTestHandler();
         File file = new File("C:\\Entwicklung\\Praktikant\\IntelliJ\\ReqReTest\\Requests.txt");
         handler.importRequests(file);
-        handler.sendRequests();
+        //handler.sendRequests();
     }
 
 }
