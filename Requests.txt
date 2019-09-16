@@ -6,6 +6,8 @@ Referer: https://www.google.at/
 Connection: keep-alive
 Host: consent.google.com
 --options
-AssertHeader:no-cache:Pragma;
-AssertHeader:keep-alive:Connection;
+AssertHeader:Pragma:no-caches
+AssertHeader:Content-Type:text/html; charset=utf-8
+AssertStatusCode:205
+
 

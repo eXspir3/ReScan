@@ -1,3 +1,5 @@
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import rawhttp.core.RawHttp;
 import rawhttp.core.RawHttpRequest;
 import rawhttp.core.RawHttpResponse;
@@ -12,15 +14,16 @@ import java.util.Scanner;
 
 class ReTestHandler {
     private Map<String, String> requestMap = new HashMap<>();
-    private Map<Integer, RawHttpResponse> testedResponseMap = new HashMap<>();
+    Table<String, String, String> loggedErrors = HashBasedTable.create();
+
 
     void sendRequests() throws IOException {
         TcpRawHttpClient client = new TcpRawHttpClient();
         RawHttp http = new RawHttp();
-        for(Map.Entry<String, String> entry :requestMap.entrySet()){
-            RawHttpRequest request = http.parseRequest(entry.getValue());
+        for(Map.Entry<String, String> entry : requestMap.entrySet()){
+            RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request);
-            testResponse(entry.getKey(), entry.getValue(), response);
+            testResponse(entry.getValue(), entry.getKey(), response);
         }
     }
 
@@ -34,27 +37,37 @@ class ReTestHandler {
             options = scanner.next();
             requestMap.put(request, options);
         }
+        System.out.println(requestMap.toString());
     }
 
-    private void testResponse(String options, String Request, RawHttpResponse response){
+    private void testResponse(String options, String request, RawHttpResponse response){
+        System.out.println(options);
         Scanner scanner = new Scanner(options);
-        scanner.useDelimiter(":|;");
+        scanner.useDelimiter("\n|:|\r\n");
         while(scanner.hasNext()){
             String option = scanner.next();
-            if(option.startsWith("AssertHeader:")){
-                System.out.println("AssertHeader: ");
-                assertEquals(scanner.next(),
-                        response.getHeaders().getFirst(scanner.next()).orElse(""));
-            } else if(option.startsWith("AssertStatusCode: ")){
-                System.out.println("AssertStatusCode");
+            if(option.equalsIgnoreCase("AssertHeader")){
+                String headerField  = scanner.next();
+                String headerFieldValue = scanner.next();
+                assertEquals(headerFieldValue,
+                        response.getHeaders().getFirst(headerField).orElse(""), request, response, headerField);
+            } else if(option.equalsIgnoreCase("AssertStatusCode")){
+                String statusCode = scanner.next();
+                assertEquals(statusCode, Integer.valueOf(response.getStatusCode()).toString(), request, response, "Statuscode");
             }
+        }
+        System.out.println(loggedErrors.toString());
+    }
 
-
+    private void assertEquals(String s, String orElse, String request, RawHttpResponse response, String headerField) {
+        if(!s.equalsIgnoreCase(orElse)){
+            String errMsg = headerField + " was expected to be '" + s + "' but was: '" + orElse + "'";
+            loggedErrors.put(errMsg, request, response.toString());
         }
     }
 
-    private void assertEquals(String s, String orElse) {
-        System.out.println("Ist " + s + " dasselbe wie " + orElse + " ?");
+    private void assertBodyContains(){
+
     }
 
 
