@@ -20,9 +20,9 @@ public class ReqReTest {
 
     public static void main(String[] args) throws IOException {
         ReTestHandler handler = new ReTestHandler();
-        File file = new File("C:\\Entwicklung\\Praktikant\\IntelliJ\\ReqReTest\\Requests.txt");
+        File file = new File("Requests.txt");
         handler.importRequests(file);
-        //handler.sendRequests();
+        handler.sendRequests();
     }
 
 }
