@@ -1,0 +1,27 @@
+GET https://ogs.google.com/widget/app/so?hl=de&origin=https%3A%2F%2Fwww.google.at&pid=1&spid=1&usegapi=1 HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0
+Accept: */*
+Accept-Language: de,en-US;q=0.7,en;q=0.3
+Referer: https://www.google.at/
+X-Moz: prefetch
+Origin: https://www.google.at
+Connection: keep-alive
+Cookie: NID=188=wm6YSwOmaEBCwHhHsNNqogVFc1GlNLXqllWJBOOYzx6b40HvQwoDgqXpibkANml1LaoKM_QC6vicTlZYGq1OzVgOKMNyPvcAWyzuAr0oyBAYuTN7GZkhCUaNS3VeRB6s3rSuFOvhoKcrWNo9K8sdaalq2wpAztvtLnyTyZVGugc
+Host: ogs.google.com
+--nextRequest
+GET https://consent.google.com/status?continue=https://www.google.at&m=0&pc=s&timestamp=1568627483&gl=AT HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0
+Accept: image/webp,*/*
+Accept-Language: de,en-US;q=0.7,en;q=0.3
+Referer: https://www.google.at/
+Connection: keep-alive
+Host: consent.google.com
+--nextRequest
+GET https://tracking-protection.cdn.mozilla.net/base-track-digest256/1564526481 HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0
+Accept: */*
+Accept-Language: de,en-US;q=0.7,en;q=0.3
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Host: tracking-protection.cdn.mozilla.net
