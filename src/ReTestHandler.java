@@ -126,15 +126,12 @@ class ReTestHandler {
             System.out.println(loggedErrors.toString());
             System.exit(noLogs);
         }
-
     }
 
     private static String getCurrentTimeStamp() {
-        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
         Date now = new Date();
         String strDate = sdfDate.format(now);
         return strDate;
     }
-
-
 }
