@@ -1,13 +1,14 @@
-GET https://consent.google.com/status?continue=https://www.google.at&m=0&pc=s&timestamp=1568627483&gl=AT HTTP/1.1
+GET http://google.at/ HTTP/1.1
 User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0
-Accept: image/webp,*/*
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
 Accept-Language: de,en-US;q=0.7,en;q=0.3
-Referer: https://www.google.at/
 Connection: keep-alive
-Host: consent.google.com
+Upgrade-Insecure-Requests: 1
+Proxy-Connection: Keep-Alive
+Host: google.at
 --options
 AssertHeader:Pragma:no-caches
 AssertHeader:Content-Type:text/html; charset=utf-8
 AssertStatusCode:205
-ContainsRegex:google
+ContainsRegex:Unauthorized
 
