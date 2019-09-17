@@ -11,6 +11,8 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -23,7 +25,7 @@ class ReTestHandler {
     private Table<String, String, String> loggedErrors;
     private TcpRawHttpClient client;
     private RawHttp http;
-    private Integer noLogs = 1;
+    private Integer noLogs = 0;
 
     ReTestHandler(File requests) throws FileNotFoundException {
         this.requests = requests;
@@ -47,9 +49,9 @@ class ReTestHandler {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request);
+            noLogs++;
             loggedErrors.put("\n\n" + noLogs.toString(), "\n\n" + noLogs.toString() + ". Request: \n\n" + request.toString(),
                     noLogs.toString() + ". Response: \n\n" + response.toString());
-            noLogs++;
         }
         saveResults();
     }
@@ -90,10 +92,10 @@ class ReTestHandler {
         if(!s.equalsIgnoreCase(orElse)){
             String errMsg = ". Error: " + headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
                     "==============================";
+            noLogs++;
             loggedErrors.put(noLogs.toString() + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString() + "\n\n",
                     noLogs.toString() + ". Response: \n\n" + response.toString() + "\n\n=========================" +
                             "===============================\n\n");
-            noLogs++;
         }
     }
 
@@ -104,25 +106,34 @@ class ReTestHandler {
         if(!matches){
             String errMsg = ". Error: RegexString '" + regexString + "' did not match in HTTP-Response-Body\n\n===========================" +
                     "==============================";
+            noLogs++;
             loggedErrors.put(noLogs.toString() + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString() + "\n\n",
                     noLogs.toString() + ". Response-Body: \n\n" + response.getBody() + "\n\n=========================" +
                             "===============================\n\n");
-            noLogs++;
         }
     }
 
     private void saveResults(){
-        Path path = Paths.get("results_" + System.currentTimeMillis()/1000 + ".txt");
+        Path path = Paths.get("results_" + getCurrentTimeStamp() + ".txt");
         try{
             Files.createFile(path);
             Files.writeString(path, loggedErrors.toString(), StandardOpenOption.APPEND);
+            System.exit(noLogs);
         } catch (IOException e){
             System.out.println("An Exception occured when trying to write File: " + path.toString());
             System.out.println("ErrMsg: " +  e.getMessage() + "\n");
             System.out.println("Results printed to Console because File Operation Failed! \n\n");
             System.out.println(loggedErrors.toString());
+            System.exit(noLogs);
         }
 
+    }
+
+    private static String getCurrentTimeStamp() {
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        Date now = new Date();
+        String strDate = sdfDate.format(now);
+        return strDate;
     }
 
 
