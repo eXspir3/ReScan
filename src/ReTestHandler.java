@@ -102,10 +102,10 @@ class ReTestHandler {
         Matcher matcher = regexPattern.matcher(response.getBody().toString());
         boolean matches = matcher.matches();
         if(!matches){
-            String errMsg = ". Error: " + regexString + " did not match in HTTP-Response-Body\n\n===========================" +
+            String errMsg = ". Error: RegexString '" + regexString + "' did not match in HTTP-Response-Body\n\n===========================" +
                     "==============================";
             loggedErrors.put(noLogs.toString() + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString() + "\n\n",
-                    noLogs.toString() + ". Response: \n\n" + response.getBody().toString() + "\n\n=========================" +
+                    noLogs.toString() + ". Response-Body: \n\n" + response.getBody() + "\n\n=========================" +
                             "===============================\n\n");
             noLogs++;
         }
