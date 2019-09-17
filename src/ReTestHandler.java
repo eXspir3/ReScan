@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class ReTestHandler {
     private Map<String, String> requestMap = new HashMap<>();
@@ -60,9 +62,8 @@ class ReTestHandler {
                 String statusCode = scanner.next();
                 assertEquals(statusCode, Integer.valueOf(response.getStatusCode()).toString(), request, response, "Statuscode");
             } else if(option.equalsIgnoreCase("ContainRegex")){
-                scanner.useDelimiter("\\^|\\$");
-                System.out.println("ContainsRegex Option set: " + scanner.next());
-                scanner.useDelimiter("\n|:|\r\n");
+                String regexString = scanner.next();
+                assertBodyContains(regexString, request, response);
             }
         }
         System.out.println(loggedErrors.toString());
@@ -75,8 +76,14 @@ class ReTestHandler {
         }
     }
 
-    private void assertBodyContains(){
-
+    private void assertBodyContains(String regexString, String request, RawHttpResponse response){
+        Pattern regexPattern = Pattern.compile(regexString);
+        Matcher matcher = regexPattern.matcher(response.getBody().toString());
+        boolean matches = matcher.matches();
+        if(!matches){
+            String errMsg = regexString + " did not match in HTTP-Response-Body";
+            loggedErrors.put(errMsg, request, response.getBody().toString());
+        }
     }
 
 
