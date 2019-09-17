@@ -56,11 +56,11 @@ public class ReqReTest {
 
         ReTestHandler handler = new ReTestHandler(file);
         if(mode==0){
-            System.out.println("Using Mode without options!\n");
+            System.out.println("-m Mode = 0 --> Assertions will NOT be checked!\n");
             handler.replayNoOptions();
         }
         if(mode==1){
-            System.out.println("Using Mode with options!\n");
+            System.out.println("-m Mode = 1 --> Assertions will be checked!\n");
             handler.replayWithOptions();
         }
 
