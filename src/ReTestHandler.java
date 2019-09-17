@@ -47,7 +47,7 @@ class ReTestHandler {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request);
-            loggedErrors.put(noLogs.toString(), noLogs.toString() + ". Request: \n\n" + request.toString(),
+            loggedErrors.put("\n\n" + noLogs.toString(), "\n\n" + noLogs.toString() + ". Request: \n\n" + request.toString(),
                     noLogs.toString() + ". Response: \n\n" + response.toString());
             noLogs++;
         }
@@ -90,7 +90,7 @@ class ReTestHandler {
         if(!s.equalsIgnoreCase(orElse)){
             String errMsg = headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
                     "==============================";
-            loggedErrors.put(noLogs.toString() + ". Error:" + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
+            loggedErrors.put(noLogs.toString() + ". Error: " + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
                     noLogs.toString() + ". Response: \n\n" + response.toString() + "\n========================= +" +
                             "===============================");
             noLogs++;
@@ -104,7 +104,7 @@ class ReTestHandler {
         if(!matches){
             String errMsg = regexString + " did not match in HTTP-Response-Body\n\n===========================" +
                     "==============================";
-            loggedErrors.put(noLogs.toString() + ". Error:" + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
+            loggedErrors.put("\n\n" + noLogs.toString() + ". Error: " + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
                     noLogs.toString() + ". Response-Body: \n\n" + response.getBody().toString() + "\n============================" +
                             "===============================");
             noLogs++;
