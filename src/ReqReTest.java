@@ -1,11 +1,5 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
-import java.net.URLConnection;
-import java.util.Base64;
-import java.util.Scanner;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -20,10 +14,6 @@ public class ReqReTest {
 
     public static void main(String[] args) throws IOException, ParseException {
         Integer mode = 0;
-        String proxyHost = "";
-        String proxyPort = "";
-        String proxyUser = "";
-        String proxyPass = "";
         CommandLine commandLine;
         File file = null;
 
@@ -56,18 +46,6 @@ public class ReqReTest {
             }
             if (commandLine.hasOption("proxy")) {
                 System.out.println("proxy Not Implemented");
-                if (commandLine.hasOption("host")) {
-                    proxyHost = commandLine.getOptionValue("host");
-                }
-                if (commandLine.hasOption("port")) {
-                    proxyPort = commandLine.getOptionValue("port");
-                }
-                if (commandLine.hasOption("user")) {
-                    proxyUser = commandLine.getOptionValue("user");
-                if (commandLine.hasOption("pass")) {
-                    proxyPass = commandLine.getOptionValue("pass");
-                }
-                }
             }
 
         } catch (ParseException exception) {

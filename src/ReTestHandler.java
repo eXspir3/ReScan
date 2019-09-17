@@ -39,7 +39,7 @@ class ReTestHandler {
     void replayWithOptions() throws IOException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
-            RawHttpResponse<?> response = client.send(request);
+            RawHttpResponse<?> response = client.send(request).eagerly();
             checkResponseOptions(entry.getValue(), entry.getKey(), response);
         }
         saveResults();
@@ -48,7 +48,7 @@ class ReTestHandler {
     void replayNoOptions() throws IOException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
-            RawHttpResponse<?> response = client.send(request);
+            RawHttpResponse<?> response = client.send(request).eagerly();
             noLogs++;
             loggedErrors.put("\n\n" + noLogs.toString(), "\n\n" + noLogs.toString() + ". Request: \n\n" + request.toString(),
                     noLogs.toString() + ". Response: \n\n" + response.toString());
@@ -68,7 +68,7 @@ class ReTestHandler {
         }
     }
 
-    private void checkResponseOptions(String options, String request, RawHttpResponse response){
+    private void checkResponseOptions(String options, String request, RawHttpResponse response) throws IOException {
         Scanner scanner = new Scanner(options);
         scanner.useDelimiter("\n|:|\r\n");
         while(scanner.hasNext()){
@@ -99,16 +99,18 @@ class ReTestHandler {
         }
     }
 
-    private void assertBodyContains(String regexString, String request, RawHttpResponse response){
+    private void assertBodyContains(String regexString, String request, RawHttpResponse response) throws IOException {
+        String body = response.eagerly().getBody().toString();
         Pattern regexPattern = Pattern.compile(regexString);
-        Matcher matcher = regexPattern.matcher(response.getBody().toString());
-        boolean matches = matcher.matches();
+        Matcher matcher = regexPattern.matcher(body);
+        boolean matches = matcher.find();
+        System.out.println("Regex Pattern matched: " + matches);
         if(!matches){
             String errMsg = ". Error: RegexString '" + regexString + "' did not match in HTTP-Response-Body\n\n===========================" +
                     "==============================";
             noLogs++;
             loggedErrors.put(noLogs.toString() + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString() + "\n\n",
-                    noLogs.toString() + ". Response-Body: \n\n" + response.getBody() + "\n\n=========================" +
+                    noLogs.toString() + ". Response-Body: \n\n" + body + "\n\n=========================" +
                             "===============================\n\n");
         }
     }
