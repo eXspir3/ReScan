@@ -88,11 +88,11 @@ class ReTestHandler {
 
     private void assertEquals(String s, String orElse, String request, RawHttpResponse response, String headerField) {
         if(!s.equalsIgnoreCase(orElse)){
-            String errMsg = headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
+            String errMsg = ". Error: " + headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
                     "==============================";
-            loggedErrors.put(noLogs.toString() + ". Error: " + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
-                    noLogs.toString() + ". Response: \n\n" + response.toString() + "\n========================= +" +
-                            "===============================");
+            loggedErrors.put(noLogs.toString() + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+                    noLogs.toString() + ". Response: \n\n" + response.toString() + "\n\n=========================" +
+                            "===============================\n\n");
             noLogs++;
         }
     }
@@ -102,11 +102,11 @@ class ReTestHandler {
         Matcher matcher = regexPattern.matcher(response.getBody().toString());
         boolean matches = matcher.matches();
         if(!matches){
-            String errMsg = regexString + " did not match in HTTP-Response-Body\n\n===========================" +
+            String errMsg = ". Error: " + regexString + " did not match in HTTP-Response-Body\n\n===========================" +
                     "==============================";
-            loggedErrors.put("\n\n" + noLogs.toString() + ". Error: " + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
-                    noLogs.toString() + ". Response-Body: \n\n" + response.getBody().toString() + "\n============================" +
-                            "===============================");
+            loggedErrors.put(noLogs.toString() + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+                    noLogs.toString() + ". Response: \n\n" + response.getBody().toString() + "\n\n=========================" +
+                            "===============================\n\n");
             noLogs++;
         }
     }
