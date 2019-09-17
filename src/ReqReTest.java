@@ -16,7 +16,7 @@ public class ReqReTest {
     public static void main(String[] args) throws IOException {
         File file = new File("Requests.txt");
         ReTestHandler handler = new ReTestHandler(file);
-        handler.sendAndTest();
+        handler.replayNoOptions();
     }
 
 }

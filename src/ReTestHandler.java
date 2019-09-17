@@ -5,8 +5,11 @@ import rawhttp.core.RawHttpRequest;
 import rawhttp.core.RawHttpResponse;
 import rawhttp.core.client.TcpRawHttpClient;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,39 +18,55 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class ReTestHandler {
-    private Map<String, String> requestMap = new HashMap<>();
-    private File file;
-    private Table<String, String, String> loggedErrors = HashBasedTable.create();
+    private Map<String, String> requestMap;
+    private File requests;
+    private Table<String, String, String> loggedErrors;
+    private TcpRawHttpClient client;
+    private RawHttp http;
+    private Integer noLogs = 0;
 
-    public ReTestHandler(File file) throws FileNotFoundException {
-    this.file = file;
-    this.importRequests();
+    ReTestHandler(File requests) throws FileNotFoundException {
+        this.requests = requests;
+        this.client = new TcpRawHttpClient();
+        this.http = new RawHttp();
+        this.requestMap = new HashMap<>();
+        this.loggedErrors = HashBasedTable.create();
+        this.importRequests();
     }
 
-    void sendAndTest() throws IOException {
-        TcpRawHttpClient client = new TcpRawHttpClient();
-        RawHttp http = new RawHttp();
+    void replayWithOptions() throws IOException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request);
-            testResponse(entry.getValue(), entry.getKey(), response);
+            checkResponseOptions(entry.getValue(), entry.getKey(), response);
         }
+        saveResults();
+    }
+
+    void replayNoOptions() throws IOException {
+        for(Map.Entry<String, String> entry : requestMap.entrySet()){
+            RawHttpRequest request = http.parseRequest(entry.getKey());
+            RawHttpResponse<?> response = client.send(request);
+            loggedErrors.put(noLogs.toString(), noLogs.toString() + ". Request: \n\n" + request.toString(),
+                    noLogs.toString() + ". Response: \n\n" + response.toString());
+            noLogs++;
+        }
+        saveResults();
     }
 
     private void importRequests() throws FileNotFoundException {
         String request;
         String options;
-        Scanner scanner = new Scanner(this.file);
+        Scanner scanner = new Scanner(this.requests);
         scanner.useDelimiter("--options|--nextRequest");
         while(scanner.hasNext()) {
             request = scanner.next();
             options = scanner.next();
             requestMap.put(request, options);
         }
-        System.out.println(requestMap.toString());
     }
 
-    private void testResponse(String options, String request, RawHttpResponse response){
+    private void checkResponseOptions(String options, String request, RawHttpResponse response){
         System.out.println(options);
         Scanner scanner = new Scanner(options);
         scanner.useDelimiter("\n|:|\r\n");
@@ -61,7 +80,7 @@ class ReTestHandler {
             } else if(option.equalsIgnoreCase("AssertStatusCode")){
                 String statusCode = scanner.next();
                 assertEquals(statusCode, Integer.valueOf(response.getStatusCode()).toString(), request, response, "Statuscode");
-            } else if(option.equalsIgnoreCase("ContainRegex")){
+            } else if(option.equalsIgnoreCase("ContainsRegex")){
                 String regexString = scanner.next();
                 assertBodyContains(regexString, request, response);
             }
@@ -71,8 +90,11 @@ class ReTestHandler {
 
     private void assertEquals(String s, String orElse, String request, RawHttpResponse response, String headerField) {
         if(!s.equalsIgnoreCase(orElse)){
-            String errMsg = headerField + " was expected to be '" + s + "' but was: '" + orElse + "'";
-            loggedErrors.put(errMsg, request, response.toString());
+            String errMsg = headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
+                    "==============================";
+            loggedErrors.put(noLogs.toString() + ". Error:" + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
+                    noLogs.toString() + ". Response: \n\n" + response.toString());
+            noLogs++;
         }
     }
 
@@ -81,9 +103,25 @@ class ReTestHandler {
         Matcher matcher = regexPattern.matcher(response.getBody().toString());
         boolean matches = matcher.matches();
         if(!matches){
-            String errMsg = regexString + " did not match in HTTP-Response-Body";
-            loggedErrors.put(errMsg, request, response.getBody().toString());
+            String errMsg = regexString + " did not match in HTTP-Response-Body\n\n===========================" +
+                    "==============================";
+            loggedErrors.put(noLogs.toString() + ". Error:" + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
+                    noLogs.toString() + ". Response-Body: \n\n" + response.getBody().toString());
+            noLogs++;
         }
+    }
+
+    private void saveResults(){
+        Path path = Paths.get("results.txt");
+        try{
+            Files.createFile(path);
+            Files.writeString(path, loggedErrors.toString(), StandardOpenOption.APPEND);
+        } catch (IOException e){
+            System.out.println("ErrMsg: " +  e.getMessage() + "Cause: " + e.getCause() + "\n");
+            System.out.println("Results printed to Console because File Operation Failed! \n\n");
+            System.out.println(loggedErrors.toString());
+        }
+
     }
 
 
