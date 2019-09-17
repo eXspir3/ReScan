@@ -11,4 +11,5 @@ AssertHeader:Pragma:no-caches
 AssertHeader:Content-Type:text/html; charset=utf-8
 AssertStatusCode:205
 ContainsRegex:Moveddd
+ContainsRegex:Moved
 
