@@ -23,7 +23,7 @@ class ReTestHandler {
     private Table<String, String, String> loggedErrors;
     private TcpRawHttpClient client;
     private RawHttp http;
-    private Integer noLogs = 0;
+    private Integer noLogs = 1;
 
     ReTestHandler(File requests) throws FileNotFoundException {
         this.requests = requests;
@@ -67,7 +67,6 @@ class ReTestHandler {
     }
 
     private void checkResponseOptions(String options, String request, RawHttpResponse response){
-        System.out.println(options);
         Scanner scanner = new Scanner(options);
         scanner.useDelimiter("\n|:|\r\n");
         while(scanner.hasNext()){
@@ -85,7 +84,6 @@ class ReTestHandler {
                 assertBodyContains(regexString, request, response);
             }
         }
-        System.out.println(loggedErrors.toString());
     }
 
     private void assertEquals(String s, String orElse, String request, RawHttpResponse response, String headerField) {
@@ -93,7 +91,8 @@ class ReTestHandler {
             String errMsg = headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
                     "==============================";
             loggedErrors.put(noLogs.toString() + ". Error:" + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
-                    noLogs.toString() + ". Response: \n\n" + response.toString());
+                    noLogs.toString() + ". Response: \n\n" + response.toString() + "\n========================= +" +
+                            "===============================");
             noLogs++;
         }
     }
@@ -106,18 +105,20 @@ class ReTestHandler {
             String errMsg = regexString + " did not match in HTTP-Response-Body\n\n===========================" +
                     "==============================";
             loggedErrors.put(noLogs.toString() + ". Error:" + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString(),
-                    noLogs.toString() + ". Response-Body: \n\n" + response.getBody().toString());
+                    noLogs.toString() + ". Response-Body: \n\n" + response.getBody().toString() + "\n============================" +
+                            "===============================");
             noLogs++;
         }
     }
 
     private void saveResults(){
-        Path path = Paths.get("results.txt");
+        Path path = Paths.get("results_" + System.currentTimeMillis()/1000 + ".txt");
         try{
             Files.createFile(path);
             Files.writeString(path, loggedErrors.toString(), StandardOpenOption.APPEND);
         } catch (IOException e){
-            System.out.println("ErrMsg: " +  e.getMessage() + "Cause: " + e.getCause() + "\n");
+            System.out.println("An Exception occured when trying to write File: " + path.toString());
+            System.out.println("ErrMsg: " +  e.getMessage() + "\n");
             System.out.println("Results printed to Console because File Operation Failed! \n\n");
             System.out.println(loggedErrors.toString());
         }
