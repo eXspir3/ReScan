@@ -133,33 +133,17 @@ class ReScanHandler {
         Path path = Paths.get("results_" + getCurrentTimeStamp() + ".txt");
         try{
             Files.createFile(path);
-            Files.write(path, prettyPrintTable(loggedFailed).getBytes(), StandardOpenOption.APPEND);
-            Files.write(path, prettyPrintTable(loggedPassed).getBytes(), StandardOpenOption.APPEND);
+            Files.write(path, new prettyTablePrinter(loggedFailed).prettyPrintTable().getBytes(), StandardOpenOption.APPEND);
+            Files.write(path, new prettyTablePrinter(loggedPassed).prettyPrintTable().getBytes(), StandardOpenOption.APPEND);
             System.exit(noLogsFailed);
         } catch (IOException e){
             System.out.println("An Exception occured when trying to write File: " + path.toString());
             System.out.println("ErrMsg: " +  e.getMessage() + "\n");
             System.out.println("Results printed to Console because File Operation Failed! \n\n");
-            System.out.println(prettyPrintTable(loggedFailed));
-            System.out.println(prettyPrintTable(loggedPassed));
+            System.out.println(new prettyTablePrinter(loggedFailed).prettyPrintTable());
+            System.out.println(new prettyTablePrinter(loggedPassed).prettyPrintTable());
             System.exit(noLogsFailed);
         }
-    }
-
-    private String prettyPrintTable(Table table){
-        StringBuilder mapAsString = new StringBuilder("Results: \n\n");
-        Iterator iterRow = table.rowMap().entrySet().iterator();
-        Iterator iterCol = table.columnMap().entrySet().iterator();
-        while (iterRow.hasNext()){
-            Map.Entry entryRow = (Map.Entry) iterRow.next();
-            mapAsString.append(entryRow.getKey());
-            if(iterCol.hasNext()){
-                Map.Entry entryCol = (Map.Entry) iterCol.next();
-                mapAsString.append(entryCol.getKey());
-                mapAsString.append(entryCol.getValue().toString().substring(3,entryCol.getValue().toString().length() - 1));
-            }
-        }
-        return mapAsString.toString();
     }
 
     private static String getCurrentTimeStamp() {

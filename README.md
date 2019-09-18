@@ -1,4 +1,4 @@
-# ReScan 1.0.5
+# ReScan 1.0.6
 
 *ReScan is a tool to Help you resend certain HTTP / HTTPS Requests and specify assertions for the incoming HTTP / HTTPS response.*
 

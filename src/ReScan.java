@@ -39,10 +39,10 @@ public class ReScan {
 
         try {
             commandLine = parser.parse(options, args);
-            System.out.println("ReScan Version 1.0.5 - Author: Philipp Ensinger");
+            System.out.println("ReScan Version 1.0.6 - Author: Philipp Ensinger");
             System.out.println("===============================================");
             if (commandLine.hasOption("help")){
-                System.out.println("ReScan Version 1.0.5\n\n" +
+                System.out.println("ReScan Version 1.0.6\n\n" +
                         "CommandLine Arguments:\n" +
                         "\n" +
                         "-f Specify the .txt File containing your Requests and Options in special formatting (guide on github)\n" +
