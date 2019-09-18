@@ -40,10 +40,10 @@ public class ReScan {
         try {
             commandLine = parser.parse(options, args);
             if (commandLine.hasOption("help")){
-                System.out.println("ReScan Version 1.0.1\n\n" +
+                System.out.println("ReScan Version 1.0.4\n\n" +
                         "CommandLine Arguments:\n" +
                         "\n" +
-                        "-f Specify the .txt File containing your Requests and Options in special formatting (guide below)\n" +
+                        "-f Specify the .txt File containing your Requests and Options in special formatting (guide on github)\n" +
                         "-m Specify the Mode to be used, currently supported:\n" +
                         "-m 0 Send the Requests and Save to Responses with no further Checking\n" +
                         "-m 1 Send the Requests and Check the Responses with your Assertions and save only the Errors\n" +
