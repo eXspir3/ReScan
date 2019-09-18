@@ -1,3 +1,9 @@
+out/
+out/production/
+out/production/ReScan/
+out/artifacts
+out/artifacts/ReqReTest_jar
+out/artifacts/ReScan_jar
 /out/
 /out/production/
 /out/production/ReScan/
