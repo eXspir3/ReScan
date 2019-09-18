@@ -19,7 +19,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class ReTestHandler {
+class ReScanHandler {
     private Map<String, String> requestMap;
     private File requests;
     private Table<String, String, String> loggedErrors;
@@ -27,7 +27,7 @@ class ReTestHandler {
     private RawHttp http;
     private Integer noLogs = 0;
 
-    ReTestHandler(File requests) throws FileNotFoundException {
+    ReScanHandler(File requests) throws FileNotFoundException {
         this.requests = requests;
         this.client = new TcpRawHttpClient();
         this.http = new RawHttp();

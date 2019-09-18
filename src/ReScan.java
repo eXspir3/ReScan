@@ -10,7 +10,7 @@ import org.apache.commons.cli.ParseException;
 
 
 
-public class ReqReTest {
+public class ReScan {
 
     public static void main(String[] args) throws IOException, ParseException {
         Integer mode = 0;
@@ -54,7 +54,7 @@ public class ReqReTest {
             System.exit(-1);
         }
 
-        ReTestHandler handler = new ReTestHandler(file);
+        ReScanHandler handler = new ReScanHandler(file);
         if(mode==0){
             System.out.println("-m Mode = 0 --> Assertions will NOT be checked!\n");
             handler.replayNoOptions();
