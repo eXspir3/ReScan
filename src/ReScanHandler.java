@@ -22,17 +22,19 @@ import java.util.regex.Pattern;
 class ReScanHandler {
     private Map<String, String> requestMap;
     private File requests;
-    private Table<String, String, String> loggedErrors;
+    private Table<String, String, String> loggedFailed;
+    private Table<String, String, String> loggedPassed;
     private TcpRawHttpClient client;
     private RawHttp http;
-    private Integer noLogs = 0;
+    private Integer noLogsFailed = 0;
+    private Integer noLogsPassed = 0;
 
     ReScanHandler(File requests) throws FileNotFoundException {
         this.requests = requests;
         this.client = new TcpRawHttpClient();
         this.http = new RawHttp();
         this.requestMap = new HashMap<>();
-        this.loggedErrors = HashBasedTable.create();
+        this.loggedFailed = HashBasedTable.create();
         this.importRequests();
     }
 
@@ -49,9 +51,9 @@ class ReScanHandler {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request).eagerly();
-            noLogs++;
-            loggedErrors.put("\n\n" + noLogs.toString(), "\n\n" + noLogs.toString() + ". Request: \n\n" + request.toString(),
-                    noLogs.toString() + ". Response: \n\n" + response.toString());
+            noLogsFailed++;
+            loggedFailed.put("\n\n" + noLogsFailed.toString(), "\n\n" + noLogsFailed.toString() + ". Request: \n\n" + request.toString(),
+                    noLogsFailed.toString() + ". Response: \n\n" + response.toString());
         }
         saveResults();
     }
@@ -90,11 +92,18 @@ class ReScanHandler {
 
     private void assertEquals(String s, String orElse, String request, RawHttpResponse response, String headerField) {
         if(!s.equalsIgnoreCase(orElse)){
-            String errMsg = ". Error: " + headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
+            String errMsg = ". Failed: " + headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
                     "==============================";
-            noLogs++;
-            loggedErrors.put(noLogs.toString() + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString() + "\n\n",
-                    noLogs.toString() + ". Response: \n\n" + response.toString() + "\n\n=========================" +
+            noLogsFailed++;
+            loggedFailed.put(noLogsFailed.toString() + errMsg + "\n\n",  noLogsFailed.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+                    noLogsFailed.toString() + ". Response: \n\n" + response.toString() + "\n\n=========================" +
+                            "===============================\n\n");
+        } else {
+            String msg = ". Passed: AssertHeader: " + headerField + "=" +  s + "\n\n=========================" +
+                    "==============================";
+            noLogsPassed++;
+            loggedPassed.put(noLogsPassed.toString() + msg + "\n\n",  noLogsPassed.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+                    noLogsPassed.toString() + ". Response: \n\n" + response.toString() + "\n\n=========================" +
                             "===============================\n\n");
         }
     }
@@ -106,11 +115,18 @@ class ReScanHandler {
         boolean matches = matcher.find();
         System.out.println("Regex Pattern matched: " + matches);
         if(!matches){
-            String errMsg = ". Error: RegexString '" + regexString + "' did not match in HTTP-Response-Body\n\n===========================" +
+            String errMsg = ". Failed: RegexString '" + regexString + "' did not match in HTTP-Response-Body\n\n===========================" +
                     "==============================";
-            noLogs++;
-            loggedErrors.put(noLogs.toString() + errMsg + "\n\n",  noLogs.toString() + ". Request: \n\n" + request.toString() + "\n\n",
-                    noLogs.toString() + ". Response-Body: \n\n" + body + "\n\n=========================" +
+            noLogsFailed++;
+            loggedFailed.put(noLogsFailed.toString() + errMsg + "\n\n",  noLogsFailed.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+                    noLogsFailed.toString() + ". Response-Body: \n\n" + body + "\n\n=========================" +
+                            "===============================\n\n");
+        } else {
+            String msg = ". Passed: BodyContains: " + regexString + "\n\n=========================" +
+                    "==============================";
+            noLogsPassed++;
+            loggedPassed.put(noLogsPassed.toString() + msg + "\n\n",  noLogsPassed.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+                    noLogsPassed.toString() + ". Response-Body: \n\n" + response.toString() + "\n\n=========================" +
                             "===============================\n\n");
         }
     }
@@ -119,14 +135,16 @@ class ReScanHandler {
         Path path = Paths.get("results_" + getCurrentTimeStamp() + ".txt");
         try{
             Files.createFile(path);
-            Files.write(path, loggedErrors.toString().getBytes(), StandardOpenOption.APPEND);
-            System.exit(noLogs);
+            Files.write(path, loggedFailed.toString().getBytes(), StandardOpenOption.APPEND);
+            Files.write(path, loggedPassed.toString().getBytes(), StandardOpenOption.APPEND);
+            System.exit(noLogsFailed);
         } catch (IOException e){
             System.out.println("An Exception occured when trying to write File: " + path.toString());
             System.out.println("ErrMsg: " +  e.getMessage() + "\n");
             System.out.println("Results printed to Console because File Operation Failed! \n\n");
-            System.out.println(loggedErrors.toString());
-            System.exit(noLogs);
+            System.out.println(loggedFailed.toString());
+            System.out.println(loggedPassed.toString());
+            System.exit(noLogsFailed);
         }
     }
 
