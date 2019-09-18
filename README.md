@@ -45,16 +45,16 @@
           
 ## Supported Assertion Methods:
 
-  **AssertHeader:** Assert that the Header of the response is something specific 
-      Format: AssertHeader:Header:Value
-        e.g.: AssertHeader:Content-Type:text/html
+  **AssertHeader:** Assert that the Header of the response is something specific   
+      Format: AssertHeader:Header:Value  
+        e.g.: AssertHeader:Content-Type:text/html  
 
-  **AssertStatusCode:** Assert that the Response contains a specific StatusCode
-      Format: AssertStatusCode:numericStatusCode
-        e.g.: AssertStatusCode:404
+  **AssertStatusCode:** Assert that the Response contains a specific StatusCode  
+      Format: AssertStatusCode:numericStatusCode  
+        e.g.: AssertStatusCode:404  
 
-  **BodyContains:** Specify a REGEX that should match to the body of the response or parts of it
-      Format: BodyContains:regex
-        e.g.: BodyContains:(unauthorized)
+  **BodyContains:** Specify a REGEX that should match to the body of the response or parts of it  
+      Format: BodyContains:regex  
+        e.g.: BodyContains:(unauthorized)  
             
           
