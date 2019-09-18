@@ -93,14 +93,14 @@ class ReScanHandler {
             String errMsg = ". Failed: " + headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
                     "============================================";
             noLogsFailed++;
-            loggedFailed.put(noLogsFailed,errMsg + "\n\n" + noLogsFailed.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+            loggedFailed.put(noLogsFailed,errMsg + "\n\n" + noLogsFailed.toString() + ". Request: \n\n" + request + "\n\n",
                     noLogsFailed.toString() + ". Response: \n\n" + response.toString() + "\n\n=========================" +
                             "============================================\n\n");
         } else {
             String msg = ". Passed: AssertHeader: " + headerField + "=" +  s + "\n\n=========================" +
                     "============================================";
             noLogsPassed++;
-            loggedPassed.put(noLogsPassed, msg + "\n\n" + noLogsPassed.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+            loggedPassed.put(noLogsPassed, msg + "\n\n" + noLogsPassed.toString() + ". Request: \n\n" + request + "\n\n",
                     noLogsPassed.toString() + ". Response: \n\n" + response.toString() + "\n\n=========================" +
                             "============================================\n\n");
         }
@@ -116,14 +116,14 @@ class ReScanHandler {
             String errMsg = ". Failed: RegexString '" + regexString + "' did not match in HTTP-Response-Body\n\n===========================" +
                     "================================================";
             noLogsFailed++;
-            loggedFailed.put(noLogsFailed,errMsg + "\n\n" + noLogsFailed.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+            loggedFailed.put(noLogsFailed,errMsg + "\n\n" + noLogsFailed.toString() + ". Request: \n\n" + request + "\n\n",
                     noLogsFailed.toString() + ". Response-Body: \n\n" + body + "\n\n=========================" +
                             "=========================================\n\n");
         } else {
             String msg = ". Passed: BodyContains: " + regexString + "\n\n===========================" +
                     "================================================";
             noLogsPassed++;
-            loggedPassed.put(noLogsPassed,msg + "\n\n" + noLogsPassed.toString() + ". Request: \n\n" + request.toString() + "\n\n",
+            loggedPassed.put(noLogsPassed,msg + "\n\n" + noLogsPassed.toString() + ". Request: \n\n" + request + "\n\n",
                     noLogsPassed.toString() + ". Response-Body: \n\n" + response.toString() + "\n\n=========================" +
                             "=========================================\n\n");
         }
@@ -148,13 +148,13 @@ class ReScanHandler {
 
     private String prettyPrintTable(Table table){
         StringBuilder mapAsString = new StringBuilder("Results: \n\n");
-        Iterator<Map.Entry> iterRow = table.rowMap().entrySet().iterator();
-        Iterator<Map.Entry> iterCol = table.columnMap().entrySet().iterator();
+        Iterator iterRow = table.rowMap().entrySet().iterator();
+        Iterator iterCol = table.columnMap().entrySet().iterator();
         while (iterRow.hasNext()){
-            Map.Entry entryRow = iterRow.next();
+            Map.Entry entryRow = (Map.Entry) iterRow.next();
             mapAsString.append(entryRow.getKey());
             if(iterCol.hasNext()){
-                Map.Entry entryCol = iterCol.next();
+                Map.Entry entryCol = (Map.Entry) iterCol.next();
                 mapAsString.append(entryCol.getKey());
                 mapAsString.append(entryCol.getValue().toString().substring(3,entryCol.getValue().toString().length() - 1));
             }
@@ -165,7 +165,6 @@ class ReScanHandler {
     private static String getCurrentTimeStamp() {
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
         Date now = new Date();
-        String strDate = sdfDate.format(now);
-        return strDate;
+        return sdfDate.format(now);
     }
 }
