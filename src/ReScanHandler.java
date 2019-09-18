@@ -81,7 +81,7 @@ class ReScanHandler {
             } else if(option.equalsIgnoreCase("AssertStatusCode")){
                 String statusCode = scanner.next();
                 assertEquals(statusCode, Integer.valueOf(response.getStatusCode()).toString(), request, response, "Statuscode");
-            } else if(option.equalsIgnoreCase("ContainsRegex")){
+            } else if(option.equalsIgnoreCase("BodyContains")){
                 String regexString = scanner.next();
                 assertBodyContains(regexString, request, response);
             }
