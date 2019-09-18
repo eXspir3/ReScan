@@ -35,6 +35,7 @@ class ReScanHandler {
         this.http = new RawHttp();
         this.requestMap = new HashMap<>();
         this.loggedFailed = HashBasedTable.create();
+        this.loggedPassed = HashBasedTable.create();
         this.importRequests();
     }
 
