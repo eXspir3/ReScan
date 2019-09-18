@@ -119,7 +119,7 @@ class ReScanHandler {
         Path path = Paths.get("results_" + getCurrentTimeStamp() + ".txt");
         try{
             Files.createFile(path);
-            Files.writeString(path, loggedErrors.toString(), StandardOpenOption.APPEND);
+            Files.write(path, loggedErrors.toString().getBytes(), StandardOpenOption.APPEND);
             System.exit(noLogs);
         } catch (IOException e){
             System.out.println("An Exception occured when trying to write File: " + path.toString());
