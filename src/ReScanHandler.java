@@ -133,15 +133,15 @@ class ReScanHandler {
         Path path = Paths.get("results_" + getCurrentTimeStamp() + ".txt");
         try{
             Files.createFile(path);
-            Files.write(path, new prettyTablePrinter(loggedFailed).prettyPrintTable().getBytes(), StandardOpenOption.APPEND);
-            Files.write(path, new prettyTablePrinter(loggedPassed).prettyPrintTable().getBytes(), StandardOpenOption.APPEND);
+            Files.write(path, new PrettyTablePrinter(loggedFailed).prettyPrintTable().getBytes(), StandardOpenOption.APPEND);
+            Files.write(path, new PrettyTablePrinter(loggedPassed).prettyPrintTable().getBytes(), StandardOpenOption.APPEND);
             System.exit(noLogsFailed);
         } catch (IOException e){
             System.out.println("An Exception occured when trying to write File: " + path.toString());
             System.out.println("ErrMsg: " +  e.getMessage() + "\n");
             System.out.println("Results printed to Console because File Operation Failed! \n\n");
-            System.out.println(new prettyTablePrinter(loggedFailed).prettyPrintTable());
-            System.out.println(new prettyTablePrinter(loggedPassed).prettyPrintTable());
+            System.out.println(new PrettyTablePrinter(loggedFailed).prettyPrintTable());
+            System.out.println(new PrettyTablePrinter(loggedPassed).prettyPrintTable());
             System.exit(noLogsFailed);
         }
     }

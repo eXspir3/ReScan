@@ -3,10 +3,10 @@ import com.google.common.collect.Table;
 import java.util.Iterator;
 import java.util.Map;
 
-class prettyTablePrinter {
+class PrettyTablePrinter {
     private Table table;
 
-    prettyTablePrinter(Table table) {
+    PrettyTablePrinter(Table table) {
         this.table = table;
     }
 
