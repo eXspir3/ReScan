@@ -8,15 +8,29 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
 
-
-
 public class ReScan {
 
+    private final static String helpArgumentText = "ReScan Version 1.0.7\n\n" +
+            "CommandLine Arguments:\n" +
+            "\n" +
+            "-f Specify the .txt File containing your Requests and Options in special formatting (guide on github)\n" +
+            "-m Specify the Mode to be used, currently supported:\n" +
+            "-m 0 Send the Requests and Save to Responses with no further Checking\n" +
+            "-m 1 Send the Requests and Check the Responses with your Assertions and save only the Errors\n" +
+            "\n"
+            +"For more Information see: https://github.com/eXspir3/ReScan";
+
+    private final static String greeting =
+            "\n\n===============================================\n" +
+            "ReScan Version 1.0.7 - Author: Philipp Ensinger\n" +
+            "===============================================\n\n";
+
     public static void main(String[] args) throws IOException {
+        System.out.println(greeting);
+
         int mode = 0;
         CommandLine commandLine;
         File file = null;
-
         Option option_help = Option.builder("help").required(false).desc("Show HelpPage").build();
         Option option_RequestsFile = Option.builder("f").required(true).desc("Specify a File With Requests").hasArg().build();
         Option option_proxy = Option.builder("proxy").required(false).desc("Choose this option to use Proxy").build();
@@ -39,18 +53,8 @@ public class ReScan {
 
         try {
             commandLine = parser.parse(options, args);
-            System.out.println("ReScan Version 1.0.6 - Author: Philipp Ensinger");
-            System.out.println("===============================================");
             if (commandLine.hasOption("help")){
-                System.out.println("ReScan Version 1.0.6\n\n" +
-                        "CommandLine Arguments:\n" +
-                        "\n" +
-                        "-f Specify the .txt File containing your Requests and Options in special formatting (guide on github)\n" +
-                        "-m Specify the Mode to be used, currently supported:\n" +
-                        "-m 0 Send the Requests and Save to Responses with no further Checking\n" +
-                        "-m 1 Send the Requests and Check the Responses with your Assertions and save only the Errors\n" +
-                        "\n"
-                +"For more Information see: https://github.com/eXspir3/ReScan");
+                System.out.println(helpArgumentText);
                 System.exit(0);
             }
             if (commandLine.hasOption("f")) {
@@ -74,15 +78,11 @@ public class ReScan {
         ReScanHandler handler = new ReScanHandler(file);
         if(mode==0){
             System.out.println("-m Mode = 0 --> Assertions will NOT be checked!\n");
-            handler.replayNoOptions();
+            handler.replayNoAssertions();
         }
         if(mode==1){
             System.out.println("-m Mode = 1 --> Assertions will be checked!\n");
-            handler.replayWithOptions();
+            handler.replayWithAssertions();
         }
-
-
-
     }
-
 }

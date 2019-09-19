@@ -19,12 +19,46 @@ import java.util.regex.Pattern;
 class ReScanHandler {
     private Map<String, String> requestMap;
     private File requests;
-    private Table<Integer, String, String> loggedFailed;
-    private Table<Integer, String, String> loggedPassed;
     private TcpRawHttpClient client;
     private RawHttp http;
-    private Integer noLogsFailed = 0;
-    private Integer noLogsPassed = 0;
+    private Table<Integer, String, String> loggedFailed;
+    private PrettyTablePrinter prettyTablePrinter;
+
+    Table<Integer, String, String> getLoggedFailed() {
+        return loggedFailed;
+    }
+
+    void setLoggedFailed(Table<Integer, String, String> loggedFailed) {
+        this.loggedFailed = loggedFailed;
+    }
+
+    Table<Integer, String, String> getLoggedPassed() {
+        return loggedPassed;
+    }
+
+    void setLoggedPassed(Table<Integer, String, String> loggedPassed) {
+        this.loggedPassed = loggedPassed;
+    }
+
+    Integer getNoLogsFailed() {
+        return noLogsFailed;
+    }
+
+    void setNoLogsFailed(Integer noLogsFailed) {
+        this.noLogsFailed = noLogsFailed;
+    }
+
+    Integer getNoLogsPassed() {
+        return noLogsPassed;
+    }
+
+    void setNoLogsPassed(Integer noLogsPassed) {
+        this.noLogsPassed = noLogsPassed;
+    }
+
+    private Table<Integer, String, String> loggedPassed;
+    private Integer noLogsFailed;
+    private Integer noLogsPassed;
 
     ReScanHandler(File requests) throws FileNotFoundException {
         this.requests = requests;
@@ -33,10 +67,13 @@ class ReScanHandler {
         this.requestMap = new HashMap<>();
         this.loggedFailed = HashBasedTable.create();
         this.loggedPassed = HashBasedTable.create();
+        this.noLogsFailed = 0;
+        this.noLogsPassed = 0;
+        this.prettyTablePrinter = new PrettyTablePrinter(this);
         this.importRequests();
     }
 
-    void replayWithOptions() throws IOException {
+    void replayWithAssertions() throws IOException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request).eagerly();
@@ -45,7 +82,7 @@ class ReScanHandler {
         saveResults();
     }
 
-    void replayNoOptions() throws IOException {
+    void replayNoAssertions() throws IOException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request).eagerly();
@@ -90,19 +127,9 @@ class ReScanHandler {
 
     private void assertEquals(String s, String orElse, String request, RawHttpResponse response, String headerField) {
         if(!s.equalsIgnoreCase(orElse)){
-            String errMsg = ". Failed: " + headerField + " was expected to be '" + s + "' but was: '" + orElse + "'\n\n=========================" +
-                    "============================================";
-            noLogsFailed++;
-            loggedFailed.put(noLogsFailed,errMsg + "\n\n" + noLogsFailed.toString() + ". Request: \n\n" + request + "\n\n",
-                    noLogsFailed.toString() + ". Response: \n\n" + response.toString() + "\n\n=========================" +
-                            "============================================\n\n");
+           prettyTablePrinter.addAssertEqualsFailed(s, orElse, request, response,headerField);
         } else {
-            String msg = ". Passed: AssertHeader: " + headerField + "=" +  s + "\n\n=========================" +
-                    "============================================";
-            noLogsPassed++;
-            loggedPassed.put(noLogsPassed, msg + "\n\n" + noLogsPassed.toString() + ". Request: \n\n" + request + "\n\n",
-                    noLogsPassed.toString() + ". Response: \n\n" + response.toString() + "\n\n=========================" +
-                            "============================================\n\n");
+           prettyTablePrinter.addAssertEqualsPassed(s, request, response,headerField);
         }
     }
 
@@ -111,21 +138,10 @@ class ReScanHandler {
         Pattern regexPattern = Pattern.compile(regexString);
         Matcher matcher = regexPattern.matcher(body);
         boolean matches = matcher.find();
-        System.out.println("Regex Pattern matched: " + matches);
         if(!matches){
-            String errMsg = ". Failed: RegexString '" + regexString + "' did not match in HTTP-Response-Body\n\n===========================" +
-                    "================================================";
-            noLogsFailed++;
-            loggedFailed.put(noLogsFailed,errMsg + "\n\n" + noLogsFailed.toString() + ". Request: \n\n" + request + "\n\n",
-                    noLogsFailed.toString() + ". Response-Body: \n\n" + body + "\n\n=========================" +
-                            "=========================================\n\n");
+            prettyTablePrinter.addBodyContainsFailed(regexString, request, response);
         } else {
-            String msg = ". Passed: BodyContains: " + regexString + "\n\n===========================" +
-                    "================================================";
-            noLogsPassed++;
-            loggedPassed.put(noLogsPassed,msg + "\n\n" + noLogsPassed.toString() + ". Request: \n\n" + request + "\n\n",
-                    noLogsPassed.toString() + ". Response-Body: \n\n" + response.toString() + "\n\n=========================" +
-                            "=========================================\n\n");
+            prettyTablePrinter.addBodyContainsPassed(regexString, request, response);
         }
     }
 
@@ -133,15 +149,14 @@ class ReScanHandler {
         Path path = Paths.get("results_" + getCurrentTimeStamp() + ".txt");
         try{
             Files.createFile(path);
-            Files.write(path, new PrettyTablePrinter(loggedFailed).prettyPrintTable().getBytes(), StandardOpenOption.APPEND);
-            Files.write(path, new PrettyTablePrinter(loggedPassed).prettyPrintTable().getBytes(), StandardOpenOption.APPEND);
+            Files.write(path, prettyTablePrinter.prettyPrintTable(loggedFailed).getBytes(), StandardOpenOption.APPEND);
+            Files.write(path, prettyTablePrinter.prettyPrintTable(loggedPassed).getBytes(), StandardOpenOption.APPEND);
             System.exit(noLogsFailed);
         } catch (IOException e){
-            System.out.println("An Exception occured when trying to write File: " + path.toString());
-            System.out.println("ErrMsg: " +  e.getMessage() + "\n");
-            System.out.println("Results printed to Console because File Operation Failed! \n\n");
-            System.out.println(new PrettyTablePrinter(loggedFailed).prettyPrintTable());
-            System.out.println(new PrettyTablePrinter(loggedPassed).prettyPrintTable());
+            System.out.println("An Exception occurred when trying to write File: " + path.toString() +
+                    "ErrMsg: " +  e.getMessage() + "\n" + "Results printed to Console because File Operation Failed! \n\n");
+            System.out.println(prettyTablePrinter.prettyPrintTable(loggedFailed));
+            System.out.println(prettyTablePrinter.prettyPrintTable(loggedPassed));
             System.exit(noLogsFailed);
         }
     }
