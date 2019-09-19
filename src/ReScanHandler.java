@@ -86,9 +86,7 @@ class ReScanHandler {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request).eagerly();
-            noLogsFailed++;
-            loggedFailed.put(noLogsFailed, "\n\n" + noLogsFailed.toString() + ". Request: \n\n" + request.toString(),
-                    noLogsFailed.toString() + ". Response: \n\n" + response.toString());
+            prettyTablePrinter.addRequestResponse(request, response);
         }
         saveResults();
     }

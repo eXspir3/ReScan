@@ -68,7 +68,6 @@ public class ReScan {
                 System.out.println("proxy Not Implemented");
             }
 
-
         } catch (ParseException exception) {
             System.out.print("Parse error: ");
             System.out.println(exception.getMessage());
@@ -76,12 +75,14 @@ public class ReScan {
         }
 
         ReScanHandler handler = new ReScanHandler(file);
-        if(mode==0){
-            System.out.println("-m Mode = 0 --> Assertions will NOT be checked!\n");
+        if(mode == 0){
+            System.out.println("-m Mode = 0 --> Assertions will NOT be checked!");
+            System.out.println("Running ...\n");
             handler.replayNoAssertions();
         }
-        if(mode==1){
-            System.out.println("-m Mode = 1 --> Assertions will be checked!\n");
+        if(mode == 1){
+            System.out.println("-m Mode = 1 --> Assertions will be checked!");
+            System.out.println("Running ...\n");
             handler.replayWithAssertions();
         }
     }

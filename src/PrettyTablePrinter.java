@@ -1,4 +1,5 @@
 import com.google.common.collect.Table;
+import rawhttp.core.RawHttpRequest;
 import rawhttp.core.RawHttpResponse;
 
 import java.io.IOException;
@@ -78,5 +79,16 @@ class PrettyTablePrinter {
 
         handler.setNoLogsPassed(noLogsPassed);
         handler.setLoggedPassed(loggedPassed);
+    }
+
+    void addRequestResponse(RawHttpRequest request, RawHttpResponse response){
+        Integer noLogsFailed = handler.getNoLogsFailed() + 1;
+        Table<Integer, String, String> loggedFailed = handler.getLoggedFailed();
+
+        loggedFailed.put(noLogsFailed, "\n\n" + noLogsFailed.toString() + ". Request: \n\n" + request.toString(),
+                noLogsFailed.toString() + ". Response: \n\n" + response.toString());
+
+        handler.setNoLogsFailed(noLogsFailed);
+        handler.setLoggedFailed(loggedFailed);
     }
 }
