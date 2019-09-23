@@ -35,7 +35,7 @@ class ReScanHandler {
     private Path aesKey;
     private final static boolean keepFile = true;
     private final static boolean deleteFile = false;
-    private RSAoverAESHandler rsaOverAesHandler;
+    private EncryptionHandler rsaOverAesHandler;
 
     Table<Integer, String, String> getLoggedFailed() {
         return loggedFailed;
@@ -84,7 +84,7 @@ class ReScanHandler {
         this.aesKey = aesKey;
         if (privKey != null) this.needsDecryption = true;
         if(pubKey != null) this.needsEncryption = true;
-        this.rsaOverAesHandler = new RSAoverAESHandler();
+        this.rsaOverAesHandler = new EncryptionHandler();
         this.importRequests();
     }
 
