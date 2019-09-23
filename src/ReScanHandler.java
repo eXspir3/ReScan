@@ -5,12 +5,14 @@ import rawhttp.core.RawHttpRequest;
 import rawhttp.core.RawHttpResponse;
 import rawhttp.core.client.TcpRawHttpClient;
 
-import java.io.*;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -18,11 +20,22 @@ import java.util.regex.Pattern;
 
 class ReScanHandler {
     private Map<String, String> requestMap;
-    private File requests;
+    private Path requestsFile;
     private TcpRawHttpClient client;
     private RawHttp http;
     private Table<Integer, String, String> loggedFailed;
     private PrettyTablePrinter prettyTablePrinter;
+    private Table<Integer, String, String> loggedPassed;
+    private Integer noLogsFailed;
+    private Integer noLogsPassed;
+    private boolean needsEncryption  = false;
+    private boolean needsDecryption  = false;
+    private Path privKey;
+    private Path pubKey;
+    private Path aesKey;
+    private final static boolean keepFile = true;
+    private final static boolean deleteFile = false;
+    private RSAoverAESHandler rsaOverAesHandler;
 
     Table<Integer, String, String> getLoggedFailed() {
         return loggedFailed;
@@ -56,12 +69,8 @@ class ReScanHandler {
         this.noLogsPassed = noLogsPassed;
     }
 
-    private Table<Integer, String, String> loggedPassed;
-    private Integer noLogsFailed;
-    private Integer noLogsPassed;
-
-    ReScanHandler(File requests) throws FileNotFoundException {
-        this.requests = requests;
+    ReScanHandler(Path requestsFile, Path privKey, Path pubKey, Path aesKey) throws IOException, GeneralSecurityException {
+        this.requestsFile = requestsFile;
         this.client = new TcpRawHttpClient();
         this.http = new RawHttp();
         this.requestMap = new HashMap<>();
@@ -70,10 +79,16 @@ class ReScanHandler {
         this.noLogsFailed = 0;
         this.noLogsPassed = 0;
         this.prettyTablePrinter = new PrettyTablePrinter(this);
+        this.privKey = privKey;
+        this.pubKey = pubKey;
+        this.aesKey = aesKey;
+        if (privKey != null) this.needsDecryption = true;
+        if(pubKey != null) this.needsEncryption = true;
+        this.rsaOverAesHandler = new RSAoverAESHandler();
         this.importRequests();
     }
 
-    void replayWithAssertions() throws IOException {
+    void replayWithAssertions() throws IOException, GeneralSecurityException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request).eagerly();
@@ -82,7 +97,7 @@ class ReScanHandler {
         saveResults();
     }
 
-    void replayNoAssertions() throws IOException {
+    void replayNoAssertions() throws IOException, GeneralSecurityException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
             RawHttpResponse<?> response = client.send(request).eagerly();
@@ -91,10 +106,31 @@ class ReScanHandler {
         saveResults();
     }
 
-    private void importRequests() throws FileNotFoundException {
+    private void importRequests() throws IOException, GeneralSecurityException {
         String request;
         String options;
-        Scanner scanner = new Scanner(this.requests);
+        Scanner scanner;
+
+        if(needsDecryption){
+            /*
+             * Decrypt AES-Key and save to File unencrypted
+             */
+
+            SecretKey AESKey = rsaOverAesHandler.decryptAESKeyAndLoad(aesKey, privKey, keepFile);
+            Files.deleteIfExists(Paths.get(aesKey + ".dec"));
+
+            /*
+             * Decrypt the provided File using AESKey
+             */
+
+            rsaOverAesHandler.decryptFile(requestsFile, AESKey);
+            byte[] fileContent = Files.readAllBytes(Paths.get(requestsFile + ".dec"));
+            String decryptedString = new String(fileContent, StandardCharsets.UTF_8);
+            Files.deleteIfExists(Paths.get(requestsFile + ".dec"));
+            scanner = new Scanner(decryptedString);
+        }else{
+         scanner = new Scanner(this.requestsFile);
+        }
         scanner.useDelimiter("--options|--nextRequest");
         while(scanner.hasNext()) {
             request = scanner.next();
@@ -143,20 +179,33 @@ class ReScanHandler {
         }
     }
 
-    private void saveResults(){
-        Path path = Paths.get("results_" + getCurrentTimeStamp() + ".txt");
+    private void saveResults() throws IOException, GeneralSecurityException {
+        Path resultsFile = Paths.get("results_" + getCurrentTimeStamp() + ".txt");
         try{
-            Files.createFile(path);
-            Files.write(path, prettyTablePrinter.prettyPrintTable(loggedFailed).getBytes(), StandardOpenOption.APPEND);
-            Files.write(path, prettyTablePrinter.prettyPrintTable(loggedPassed).getBytes(), StandardOpenOption.APPEND);
-            System.exit(noLogsFailed);
+            Files.createFile(resultsFile);
+            Files.write(resultsFile, prettyTablePrinter.prettyPrintTable(loggedFailed).getBytes(), StandardOpenOption.APPEND);
+            Files.write(resultsFile, prettyTablePrinter.prettyPrintTable(loggedPassed).getBytes(), StandardOpenOption.APPEND);
         } catch (IOException e){
-            System.out.println("An Exception occurred when trying to write File: " + path.toString() +
+            System.out.println("An Exception occurred when trying to write File: " + resultsFile.toString() +
                     "ErrMsg: " +  e.getMessage() + "\n" + "Results printed to Console because File Operation Failed! \n\n");
             System.out.println(prettyTablePrinter.prettyPrintTable(loggedFailed));
             System.out.println(prettyTablePrinter.prettyPrintTable(loggedPassed));
             System.exit(noLogsFailed);
         }
+        if(needsEncryption) {
+            SecretKey AESKey = rsaOverAesHandler.generateAESandEncryptRSA(pubKey, deleteFile, getCurrentTimeStamp());
+            System.out.println("Generating RSA-Encrypted AES-KeyFile");
+            System.out.println("Using RSA PublicKey to encrypt AES-KeyFile: " + pubKey.toString());
+
+            /*
+             * Encrypt the provided File using AESKey
+             */
+
+            System.out.println("Encrypting File: " + resultsFile + " with AES-128 GCM / NOPadding");
+            rsaOverAesHandler.encryptFile(resultsFile, AESKey);
+            Files.deleteIfExists(resultsFile);
+        }
+        System.exit(noLogsFailed);
     }
 
     private static String getCurrentTimeStamp() {
