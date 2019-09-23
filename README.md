@@ -1,4 +1,4 @@
-# ReScan 1.0.9
+# ReScan 1.1.0
 
 *ReScan is a tool to Help you resend certain HTTP / HTTPS Requests and specify assertions for the incoming HTTP / HTTPS response.*
 
@@ -8,6 +8,24 @@
   **-m** Specify the Mode to be used, currently supported:  
   **-m 0** Send the Requests and Save to Responses with no further Checking  
   **-m 1** Send the Requests and Check the Responses with your Assertions and save only the Errors  
+    
+  Encryption, Decryption:  
+  **-encryptResults** Encrypts the Results via AES-128 GCM and saves the AES Key in a File encrypted  
+                     &nbsp;    with the specified Public Key  
+  **-pubKey** Specify a RSA-PublicKey (.pem) for Encryption - this is mandatory when using -encryptResults  
+    
+  **-decryptRequests** You can load an AES-128 GCM NoPadding encrypted Requests File by specifying the aesKey  
+                    &nbsp;      stored in a File using RSA/OAEP/SHA512withMGF1 Encryption and the RSA privateKey to decrypt this File  
+  **-privKey** Specify an RSA-PrivateKey-File (.pem PKCS-8) for Decryption - this is mandatory when using -decryptRequests  
+  **-aesKey** Specify an AES-Key-File for Decryption - this is mandatory when using -decryptRequests  
+    
+    Check out the used Encryption Algorithms: https://github.com/eXspir3/RSAoverAES
+    
+## Using Encryption:
+  
+  In order to make use of the Encryption Functionality, encrypt your Requests File / decrypt your Results File with:
+  **RSAoverAES** https://github.com/eXspir3/RSAoverAES
+                    
           
 ## -f *.txt Formatting:
 
