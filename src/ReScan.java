@@ -13,19 +13,27 @@ import org.apache.commons.cli.ParseException;
 
 public class ReScan {
 
-    private final static String helpArgumentText = "ReScan Version 1.0.9\n\n" +
+    private final static String helpArgumentText = "ReScan Version 1.1.0\n\n" +
             "CommandLine Arguments:\n" +
             "\n" +
             "-f Specify the .txt File containing your Requests and Options in special formatting (guide on github)\n" +
             "-m Specify the Mode to be used, currently supported:\n" +
             "-m 0 Send the Requests and Save to Responses with no further Checking\n" +
-            "-m 1 Send the Requests and Check the Responses with your Assertions and save only the Errors\n" +
-            "\n"
+            "-m 1 Send the Requests and Check the Responses with your Assertions and save only the Errors\n\n" +
+            "Encryption, Decryption: \n" +
+            "-encryptResults Encrypts the Results via AES-128 GCM and saves the AES Key in a File encrypted \n" +
+            " with the specified RSA Public Key\n" +
+            "-pubKey Specify a RSA-PublicKey (.pem) for Encryption - this is mandatory when using -encryptResults\n" +
+            "-decryptRequests You can load an AES-128 GCM encrypted Requests File by specifying the aesKey \n" +
+            " stored in a File using RSA/OAEP/SHA512withMGF1 Encryption and the RSA privateKey to decrypt this File\n" +
+            "-privKey Specify an RSA-PrivateKey-File (.pem PKCS-8) for Decryption - this is mandatory when using -decryptRequests\n" +
+            "-aesKey Specify an AES-Key-File for Decryption - this is mandatory when using -decryptRequests\n" +
+            "\n\n"
             +"For more Information see: https://github.com/eXspir3/ReScan";
 
     private final static String greeting =
             "\n\n===============================================\n" +
-            "ReScan Version 1.0.9 - Author: Philipp Ensinger\n" +
+            "ReScan Version 1.1.0 - Author: Philipp Ensinger\n" +
             "===============================================\n\n";
 
     public static void main(String[] args) throws IOException, GeneralSecurityException {
@@ -39,7 +47,7 @@ public class ReScan {
 
 
         Option option_help = Option.builder("help").required(false).desc("Show HelpPage").build();
-        Option option_RequestsFile = Option.builder("f").required(true).desc("Specify a File With Requests").hasArg().build();
+        Option option_RequestsFile = Option.builder("f").required(false).desc("Specify a File With Requests").hasArg().build();
         Option option_proxy = Option.builder("proxy").required(false).desc("Choose this option to use Proxy").build();
         Option option_host = Option.builder("host").required(false).desc("Choose Proxy Host").hasArg().build();
         Option option_port = Option.builder("port").required(false).desc("Choose Proxy Port").hasArg().build();
@@ -50,7 +58,7 @@ public class ReScan {
         Option option_pubKey = Option.builder("pubKey").required(false).desc("File with RSA PublicKey").hasArg().build();
         Option option_aesKey = Option.builder("aesKey").required(false).desc("File with RSA Encrypted AES-Key").hasArg().build();
         Option option_encryptResults = Option.builder("encryptResults").required(false).desc("Encrypt the Results File").build();
-        Option option_mode = Option.builder("m").required(true)
+        Option option_mode = Option.builder("m").required(false)
                 .desc("Select 1 for Resending Requests with ResponseChecks or 0 for no Checks").hasArg().build();
 
         Options options = new Options();
@@ -93,9 +101,13 @@ public class ReScan {
                         throw new ParseException("-pubKey has to be specified when using -encryptResults\nBe sure to pay Attention to case-sensitivity!");
                     }
                 }
+            } else {
+                throw new ParseException("Missing required option: -f");
             }
             if (commandLine.hasOption("m")) {
                 mode = Integer.parseInt(commandLine.getOptionValue("m"));
+            }else{
+                throw new ParseException("Missing required option: -m");
             }
             if (commandLine.hasOption("proxy")) {
                 throw new ParseException("-proxy is currently not yet implemented");

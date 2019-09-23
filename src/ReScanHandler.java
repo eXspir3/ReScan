@@ -116,8 +116,7 @@ class ReScanHandler {
              * Decrypt AES-Key and save to File unencrypted
              */
 
-            SecretKey AESKey = rsaOverAesHandler.decryptAESKeyAndLoad(aesKey, privKey, keepFile);
-            Files.deleteIfExists(Paths.get(aesKey + ".dec"));
+            SecretKey AESKey = rsaOverAesHandler.decryptAESKeyAndLoad(aesKey, privKey, keepFile, deleteFile);
 
             /*
              * Decrypt the provided File using AESKey
