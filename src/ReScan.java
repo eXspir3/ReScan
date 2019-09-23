@@ -49,7 +49,7 @@ public class ReScan {
         Option option_privKey = Option.builder("privKey").required(false).desc("File with RSA PrivateKey").hasArg().build();
         Option option_pubKey = Option.builder("pubKey").required(false).desc("File with RSA PublicKey").hasArg().build();
         Option option_aesKey = Option.builder("aesKey").required(false).desc("File with RSA Encrypted AES-Key").hasArg().build();
-        Option option_encryptResults = Option.builder("encryptResults").required(false).desc("Encrypt the Results File").hasArg().build();
+        Option option_encryptResults = Option.builder("encryptResults").required(false).desc("Encrypt the Results File").build();
         Option option_mode = Option.builder("m").required(true)
                 .desc("Select 1 for Resending Requests with ResponseChecks or 0 for no Checks").hasArg().build();
 
@@ -77,7 +77,7 @@ public class ReScan {
             }
             if (commandLine.hasOption("f")) {
                 requestsFile = Paths.get(commandLine.getOptionValue("f"));
-                System.out.println("Using Requests-File: " + requestsFile + "\n");
+                System.out.println("Using Requests-File: " + requestsFile.getFileName() + "\n");
                 if (commandLine.hasOption("decryptRequests")) {
                     if(commandLine.hasOption("aesKey") && commandLine.hasOption("privKey")){
                         privKey = Paths.get(commandLine.getOptionValue("privKey"));
