@@ -18,6 +18,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Handles all Functionality regarding re-sending Requests and checking Assertions
+ */
 class ReScanHandler {
     private Map<String, String> requestMap;
     private Path requestsFile;
@@ -69,6 +72,7 @@ class ReScanHandler {
         this.noLogsPassed = noLogsPassed;
     }
 
+
     ReScanHandler(Path requestsFile, Path privKey, Path pubKey, Path aesKey) throws IOException, GeneralSecurityException {
         this.requestsFile = requestsFile;
         this.client = new TcpRawHttpClient();
@@ -88,6 +92,9 @@ class ReScanHandler {
         this.importRequests();
     }
 
+    /**
+     * Resend the imported Requests and check the assertions - saves errors and passes into results file
+     */
     void replayWithAssertions() throws IOException, GeneralSecurityException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
@@ -97,6 +104,9 @@ class ReScanHandler {
         saveResults();
     }
 
+    /**
+     * Resend the imported Requests, but do NOT check assertions - saves all responses to results file
+     */
     void replayNoAssertions() throws IOException, GeneralSecurityException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
             RawHttpRequest request = http.parseRequest(entry.getKey());
@@ -106,6 +116,10 @@ class ReScanHandler {
         saveResults();
     }
 
+    /**
+     * Import Requests from txt File in special Formating
+     * visit https://github.com/eXspir3/ReScan for more Information on correct formatting
+     */
     private void importRequests() throws IOException, GeneralSecurityException {
         String request;
         String options;
@@ -138,6 +152,12 @@ class ReScanHandler {
         }
     }
 
+    /**
+     * Function used fot parsing the set assertions and handing them to the corresponding checking Functions
+     * @param options String of Assertions
+     * @param request The Request these Assertions will be checked on
+     * @param response The Corresponding Response for the Request
+     */
     private void checkResponseOptions(String options, String request, RawHttpResponse response) throws IOException {
         Scanner scanner = new Scanner(options);
         scanner.useDelimiter("\n|:|\r\n");
@@ -158,6 +178,14 @@ class ReScanHandler {
         }
     }
 
+    /**
+     * Function to check wheter String s equals String orElse and then adding the corresponding Result to output
+     * @param s String 1 to be compared with (e.g. Asserted Value in Headerfield)
+     * @param orElse String 2 (e.g. Value in Headerfield)
+     * @param request The corresponding Request for the Assertion
+     * @param response The corresponding Response for the Assertion
+     * @param headerField The Headerfield that whose values were compared
+     */
     private void assertEquals(String s, String orElse, String request, RawHttpResponse response, String headerField) {
         if(!s.equalsIgnoreCase(orElse)){
            prettyTablePrinter.addAssertEqualsFailed(s, orElse, request, response,headerField);
@@ -166,6 +194,12 @@ class ReScanHandler {
         }
     }
 
+    /**
+     * Function for checking if some String or Regex Pattern is contained in the Response Body
+     * @param regexString RegexPattern to be checked
+     * @param request The Request for the Response that is Checked
+     * @param response The Response that is checked
+     */
     private void assertBodyContains(String regexString, String request, RawHttpResponse response) throws IOException {
         String body = response.eagerly().getBody().toString();
         Pattern regexPattern = Pattern.compile(regexString);
@@ -178,6 +212,9 @@ class ReScanHandler {
         }
     }
 
+    /**
+     * Function for writing the Results to a File and if set via Parameters encrypts it using aes
+     */
     private void saveResults() throws IOException, GeneralSecurityException {
         Path resultsFile = Paths.get("results_" + getCurrentTimeStamp() + ".txt");
         try{
@@ -207,6 +244,10 @@ class ReScanHandler {
         System.exit(noLogsFailed);
     }
 
+    /**
+     * Get the current time inkluding seconds (used for unique file names)
+     * @return String of current TimeStamp
+     */
     private static String getCurrentTimeStamp() {
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
         Date now = new Date();
