@@ -57,7 +57,7 @@
        Upgrade-Insecure-Requests: 1
        Proxy-Connection: Keep-Alive
        Host: google.at
-       --options
+       --assertions
        AssertStatusCode:301 
   
           
