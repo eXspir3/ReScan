@@ -144,7 +144,7 @@ class ReScanHandler {
         }else{
          scanner = new Scanner(this.requestsFile);
         }
-        scanner.useDelimiter("--options|--nextRequest");
+        scanner.useDelimiter("--assertions|--nextRequest");
         while(scanner.hasNext()) {
             request = scanner.next();
             options = scanner.next();
