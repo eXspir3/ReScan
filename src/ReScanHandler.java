@@ -97,9 +97,9 @@ class ReScanHandler {
      */
     void replayWithAssertions() throws IOException, GeneralSecurityException {
         for(Map.Entry<String, String> entry : requestMap.entrySet()){
-            RawHttpRequest request = http.parseRequest(entry.getKey());
+            RawHttpRequest request = http.parseRequest(entry.getKey().trim());
             RawHttpResponse<?> response = client.send(request).eagerly();
-            checkResponseOptions(entry.getValue(), entry.getKey(), response);
+            checkResponseOptions(entry.getValue(), entry.getKey().trim(), response);
         }
         saveResults();
     }
@@ -136,18 +136,18 @@ class ReScanHandler {
              * Decrypt the provided File using AESKey
              */
 
-            rsaOverAesHandler.decryptFile(requestsFile, AESKey);
-            byte[] fileContent = Files.readAllBytes(Paths.get(requestsFile + ".dec"));
+            rsaOverAesHandler.decryptFile(this.requestsFile, AESKey);
+            byte[] fileContent = Files.readAllBytes(Paths.get(this.requestsFile + ".dec"));
             String decryptedString = new String(fileContent, StandardCharsets.UTF_8);
-            Files.deleteIfExists(Paths.get(requestsFile + ".dec"));
+            Files.deleteIfExists(Paths.get(this.requestsFile + ".dec"));
             scanner = new Scanner(decryptedString);
         }else{
          scanner = new Scanner(this.requestsFile);
         }
         scanner.useDelimiter("--assertions|--nextRequest");
         while(scanner.hasNext()) {
-            request = scanner.next();
-            options = scanner.next();
+            request = scanner.next().trim();
+            options = scanner.next().trim();
             requestMap.put(request, options);
         }
     }
@@ -162,17 +162,17 @@ class ReScanHandler {
         Scanner scanner = new Scanner(options);
         scanner.useDelimiter("\n|:|\r\n");
         while(scanner.hasNext()){
-            String option = scanner.next();
+            String option = scanner.next().trim();
             if(option.equalsIgnoreCase("AssertHeader")){
-                String headerField  = scanner.next();
-                String headerFieldValue = scanner.next();
+                String headerField  = scanner.next().trim();
+                String headerFieldValue = scanner.next().trim();
                 assertEquals(headerFieldValue,
                         response.getHeaders().getFirst(headerField).orElse(""), request, response, headerField);
             } else if(option.equalsIgnoreCase("AssertStatusCode")){
-                String statusCode = scanner.next();
+                String statusCode = scanner.next().trim();
                 assertEquals(statusCode, Integer.valueOf(response.getStatusCode()).toString(), request, response, "Statuscode");
             } else if(option.equalsIgnoreCase("BodyContains")){
-                String regexString = scanner.next();
+                String regexString = scanner.next().trim();
                 assertBodyContains(regexString, request, response);
             }
         }
